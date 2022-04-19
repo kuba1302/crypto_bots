@@ -1,11 +1,16 @@
-import tensorflow as tf
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import LSTM, Dense
-from pathlib import Path
+
+from gc import callbacks
 import os 
+from pathlib import Path
 
 cuda_path = Path("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2/bin")
 os.add_dll_directory(str(cuda_path))
+
+
+import tensorflow as tf
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import LSTM, Dense
+
 
 def lstm_nn(input_dim, feature_size, output_dim=1, optimizer='Adam', loss='rmse'):
     model = Sequential()
@@ -14,8 +19,11 @@ def lstm_nn(input_dim, feature_size, output_dim=1, optimizer='Adam', loss='rmse'
             units=512,
             return_sequences=True,
             input_shape=(input_dim, feature_size),
-            recurrent_dropout=0.2,
+            recurrent_dropout=0,
             activation="tanh",
+            recurrent_activation = 'sigmoid',
+            unroll = False,
+            use_bias=True,
             kernel_regularizer="l2",
         )
     )
@@ -23,8 +31,11 @@ def lstm_nn(input_dim, feature_size, output_dim=1, optimizer='Adam', loss='rmse'
         LSTM(
             units=256,
             return_sequences=True,
-            recurrent_dropout=0.2,
+            recurrent_dropout=0,
             activation="tanh",
+            recurrent_activation = 'sigmoid',
+            unroll = False,
+            use_bias=True,
             kernel_regularizer="l2",
         )
     )
@@ -32,8 +43,11 @@ def lstm_nn(input_dim, feature_size, output_dim=1, optimizer='Adam', loss='rmse'
         LSTM(
             units=128,
             return_sequences=False,
-            recurrent_dropout=0.2,
+            recurrent_dropout=0,
             activation="tanh",
+            recurrent_activation = 'sigmoid',
+            unroll = False,
+            use_bias=True,
             kernel_regularizer="l2",
         )
     )

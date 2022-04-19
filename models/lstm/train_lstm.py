@@ -4,12 +4,12 @@ import pickle
 import os
 from pathlib import Path
 from models.lstm.lstm import lstm_nn
-
+from tensorflow.keras.callbacks import EarlyStopping
 
 if __name__ == "__main__":
     MODEL_VERSION = "0.1"
-    EPOCHS = 2000
-    BATCH_SIZE = 100
+    EPOCHS = 1000
+    BATCH_SIZE = 32
     TICKER = "BTC"
     load_path = Path(os.path.abspath("")) / "data" / "preprocessed"
     save_path = Path(os.path.abspath("")) / "models" / "lstm" / "versions"
@@ -27,5 +27,12 @@ if __name__ == "__main__":
         optimizer="Adam",
         loss="mse",
     )
-    lstm.fit(data["X_list_train"], data["Y_preds_real_list_train"], epochs=EPOCHS, batch_size=BATCH_SIZE)
-    lstm.save(save_path)
+    early_stopping = EarlyStopping(monitor="loss", mode="min", verbose=1, patience=50)
+    lstm.fit(
+        data["X_list_train"],
+        data["Y_preds_real_list_train"],
+        epochs=EPOCHS,
+        batch_size=BATCH_SIZE,
+        callbacks=[early_stopping],
+    )
+    lstm.save(save_path / f"lstm_{MODEL_VERSION}")
