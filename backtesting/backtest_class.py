@@ -4,7 +4,7 @@ import pickle
 from utils.log import prepare_logger
 import logging
 from pathlib import Path
-from tensorflow import keras
+# from tensorflow import keras
 from sklearn.metrics import mean_absolute_error
 
 logger = prepare_logger(logging.INFO)
@@ -27,9 +27,10 @@ class BackTest:
         self.ticker = ticker
         self.shorted_assets_amount = 0
         self.short_start_price = 0
-        self.model = self.load_model(model_path)
+        # self.model = self.load_model(model_path)
         self.X_scaler, self.y_scaler = self.load_scalers(scalers_path)
         self.current_asset_price = None
+        self.amout_of_transactions = 0
 
     def __repr__(self):
         return (
@@ -66,16 +67,20 @@ class BackTest:
             self.currency_count -= amount * price + self.transaction_cost_percent * amount * price
             self.asset_count += amount
             logger.info(f"BUY {amount} - PRICE: {price}")
-        else:
-            logger.info("Abort! Not enough funds to buy stock!")
+            self.amout_of_transactions += 1
+            self.log_balances()
+        # else:
+        #     logger.info("Abort! Not enough funds to buy stock!")
 
     def sell(self, amount: int, price: float):
         if self.asset_count != 0:
             self.currency_count += amount * price - self.transaction_cost_percent * amount * price
             self.asset_count -= amount
             logger.info(f"SELL {amount} - PRICE: {price}")
-        else:
-            logger.info("Abort! No assets to sell")
+            self.amout_of_transactions += 1 
+            self.log_balances()
+        # else:
+        #     logger.info("Abort! No assets to sell")
 
     def short(self, price): 
         short_amount = self.calculate_asset_amount_by_price(
@@ -83,6 +88,7 @@ class BackTest:
             )
         self.shorted_assets_amount = short_amount
         self.short_start_price = price 
+        self.amout_of_transactions += 1 
         logger.info(f"Short! - Amount: {short_amount} - Short start price {self.shorted_assets_amount}")
 
     def rebuy_short(self, price):
@@ -99,9 +105,9 @@ class BackTest:
         price_diff = pred - last_price
         if if_short:
             self.rebuy_short(last_price)
-        logger.info(
-            f"Predicted next price: {pred} - Last price: {last_price} - Diff: {price_diff}"
-        )
+        # logger.info(
+        #     f"Predicted next price: {pred} - Last price: {last_price} - Diff: {price_diff}"
+        # )
         if price_diff > last_price * top_cut_off / 100:
             buy_amount = self.calculate_asset_amount_by_price(
                 price=last_price, curr_amount=self.currency_count
@@ -112,8 +118,8 @@ class BackTest:
             self.sell(sell_amout, last_price)
             if if_short:
                 self.short(price=last_price)
-        else:
-            logger.info("Price diffrence was not enough. Skipping trade")
+        # else:
+        #     logger.info("Price diffrence was not enough. Skipping trade")
 
     def inverse_scale(self, data: np.array, data_type: str):
         if data_type == "X":
@@ -127,12 +133,13 @@ class BackTest:
         logger.info(
             f"Asset amount: {self.asset_count} - Currency: {self.currency_count}"
             f"- Total Balance {self.calculate_balance()} - Asset Price: {self.current_asset_price}"
+            f"- Amount of transcations - {self.amout_of_transactions}"
         )
 
     def simulate(
-        self, X: np.array, y: np.array, top_cut_off: float, down_cut_off: float, if_short: bool
+        self, preds: np.array, y: np.array, top_cut_off: float, down_cut_off: float, if_short: bool
     ):
-        preds = self.inverse_scale(data=self.predict_price(X), data_type="y")
+        # preds = self.inverse_scale(data=self.predict_price(X), data_type="y")
         y = self.inverse_scale(data=y, data_type="y")
         for pred, y_idx in zip(preds, range(len(y))):
             if y_idx in [0, len(y) - 1]:
@@ -146,5 +153,5 @@ class BackTest:
                 down_cut_off=down_cut_off,
                 if_short=if_short
             )
-            self.log_balances()
+            # self.log_balances()
         logger.info(f'MAE: {mean_absolute_error(y, preds)}')

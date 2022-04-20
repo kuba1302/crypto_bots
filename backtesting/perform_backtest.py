@@ -14,6 +14,7 @@ if __name__ == "__main__":
     scaled_path = Path(os.path.abspath("")).parents[0] / "data" / "preprocessed"
     scalers_path = scaled_path / f"scalers_{TICKER}.pickle"
     data_path = scaled_path / f"data_{TICKER}.pickle"
+    preds_path = Path(os.path.abspath("")) / f"preds_{TICKER}_{MODEL_VERSION}.pickle"
     model_path = (
         Path(os.path.abspath("")).parents[0]
         / "models"
@@ -32,7 +33,9 @@ if __name__ == "__main__":
     with open(data_path, "rb") as handle:
         data = pickle.load(handle)
 
-    X = data["X_list_test"]
+    with open(preds_path, "rb") as handle:
+        preds = pickle.load(handle)
+
     y = data["Y_preds_real_list_test"]
 
-    bot.simulate(X=X, y=y, top_cut_off=2, down_cut_off=2, if_short=False)
+    bot.simulate(preds=preds, y=y, top_cut_off=1, down_cut_off=1, if_short=False)
