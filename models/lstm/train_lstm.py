@@ -8,7 +8,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 
 if __name__ == "__main__":
     MODEL_VERSION = "0.1"
-    EPOCHS = 1000
+    EPOCHS = 10
     BATCH_SIZE = 32
     TICKER = "BTC"
     load_path = Path(os.path.abspath("")) / "data" / "preprocessed"

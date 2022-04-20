@@ -25,6 +25,7 @@ def lstm_nn(input_dim, feature_size, output_dim=1, optimizer='Adam', loss='rmse'
             unroll = False,
             use_bias=True,
             kernel_regularizer="l2",
+            name='LSTM1'
         )
     )
     model.add(
@@ -37,6 +38,8 @@ def lstm_nn(input_dim, feature_size, output_dim=1, optimizer='Adam', loss='rmse'
             unroll = False,
             use_bias=True,
             kernel_regularizer="l2",
+            name='LSTM2'
+
         )
     )
     model.add(
@@ -49,6 +52,8 @@ def lstm_nn(input_dim, feature_size, output_dim=1, optimizer='Adam', loss='rmse'
             unroll = False,
             use_bias=True,
             kernel_regularizer="l2",
+            name='LSTM3'
+            
         )
     )
     model.add(Dense(units=output_dim))
