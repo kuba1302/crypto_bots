@@ -4,6 +4,7 @@ import pickle
 from utils.log import prepare_logger
 import logging
 from pathlib import Path
+
 # from tensorflow import keras
 from sklearn.metrics import mean_absolute_error
 
@@ -64,7 +65,9 @@ class BackTest:
 
     def buy(self, amount: int, price: float):
         if not self.currency_count < price:
-            self.currency_count -= amount * price + self.transaction_cost_percent * amount * price
+            self.currency_count -= (
+                amount * price + self.transaction_cost_percent * amount * price
+            )
             self.asset_count += amount
             logger.info(f"BUY {amount} - PRICE: {price}")
             self.amout_of_transactions += 1
@@ -74,33 +77,47 @@ class BackTest:
 
     def sell(self, amount: int, price: float):
         if self.asset_count != 0:
-            self.currency_count += amount * price - self.transaction_cost_percent * amount * price
+            self.currency_count += (
+                amount * price - self.transaction_cost_percent * amount * price
+            )
             self.asset_count -= amount
             logger.info(f"SELL {amount} - PRICE: {price}")
-            self.amout_of_transactions += 1 
+            self.amout_of_transactions += 1
             self.log_balances()
         # else:
         #     logger.info("Abort! No assets to sell")
 
-    def short(self, price): 
+    def short(self, price):
         short_amount = self.calculate_asset_amount_by_price(
-                price=price, curr_amount=self.currency_count
-            )
+            price=price, curr_amount=self.currency_count
+        )
         self.shorted_assets_amount = short_amount
-        self.short_start_price = price 
-        self.amout_of_transactions += 1 
-        logger.info(f"Short! - Amount: {short_amount} - Short start price {self.shorted_assets_amount}")
+        self.short_start_price = price
+        self.amout_of_transactions += 1
+        logger.info(
+            f"Short! - Amount: {short_amount} - Short start price {self.shorted_assets_amount}"
+        )
 
     def rebuy_short(self, price):
         if self.shorted_assets_amount != 0:
-            short_result = (self.short_start_price - price) * self.shorted_assets_amount - self.transaction_cost_percent * self.shorted_assets_amount * price 
+            short_result = (
+                (self.short_start_price - price) * self.shorted_assets_amount
+                - self.transaction_cost_percent * self.shorted_assets_amount * price
+            )
             self.currency_count += short_result
-            logger.info(f"Realising short! - Result: {short_result} - Start price: {self.short_start_price} - End price: {price}")
+            logger.info(
+                f"Realising short! - Result: {short_result} - Start price: {self.short_start_price} - End price: {price}"
+            )
             self.short_start_price = 0
             self.shorted_assets_amount = 0
 
     def base_strategy(
-        self, pred: float, last_price: float, top_cut_off: float, down_cut_off: float, if_short: bool
+        self,
+        pred: float,
+        last_price: float,
+        top_cut_off: float,
+        down_cut_off: float,
+        if_short: bool,
     ):
         price_diff = pred - last_price
         if if_short:
@@ -137,7 +154,12 @@ class BackTest:
         )
 
     def simulate(
-        self, preds: np.array, y: np.array, top_cut_off: float, down_cut_off: float, if_short: bool
+        self,
+        preds: np.array,
+        y: np.array,
+        top_cut_off: float,
+        down_cut_off: float,
+        if_short: bool,
     ):
         # preds = self.inverse_scale(data=self.predict_price(X), data_type="y")
         y = self.inverse_scale(data=y, data_type="y")
@@ -151,7 +173,7 @@ class BackTest:
                 last_price=previous_close,
                 top_cut_off=top_cut_off,
                 down_cut_off=down_cut_off,
-                if_short=if_short
+                if_short=if_short,
             )
             # self.log_balances()
-        logger.info(f'MAE: {mean_absolute_error(y, preds)}')
+        logger.info(f"MAE: {mean_absolute_error(y, preds)}")

@@ -10,7 +10,6 @@ from utils.quantiles import q_at
 from datetime import datetime
 
 
-
 class DataPipeline:
     def __init__(
         self,
@@ -21,7 +20,7 @@ class DataPipeline:
         step_train: int,
         step_predict: int,
         if_ta=True,
-        if_btc: bool = True
+        if_btc: bool = True,
     ) -> None:
         self.ticker = ticker
         self.step_train = step_train
@@ -33,7 +32,7 @@ class DataPipeline:
         self.min_time = None
         self.max_time = None
         self.if_btc = if_btc
-        if not self.if_btc: 
+        if not self.if_btc:
             self.sentiment_df = self.load_sentiment_data()
 
     def load_sentiment_data(self):
@@ -52,7 +51,9 @@ class DataPipeline:
 
     def _load_stock_data(self):
         stock_data = pd.read_csv(self.data_path / f"{self.ticker}.csv", index_col=False)
-        stock_data['date'] = stock_data['date'].apply(lambda x: datetime.fromisoformat(x))
+        stock_data["date"] = stock_data["date"].apply(
+            lambda x: datetime.fromisoformat(x)
+        )
         stock_data.set_index(pd.DatetimeIndex(stock_data["date"]))
         return stock_data
 
@@ -127,8 +128,8 @@ class DataPipeline:
                 )
                 .dropna(axis="columns")
             )
-        else: 
-            final_data = stock_data.drop(columns='excess_column')
+        else:
+            final_data = stock_data.drop(columns="excess_column")
         if sentiment is not None:
             final_data = (
                 final_data.merge(self.sentiment_df, how="left", on="Date")

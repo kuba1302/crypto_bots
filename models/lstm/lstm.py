@@ -1,6 +1,5 @@
-
 from gc import callbacks
-import os 
+import os
 from pathlib import Path
 
 cuda_path = Path("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2/bin")
@@ -12,7 +11,7 @@ from tensorflow.keras import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 
 
-def lstm_nn(input_dim, feature_size, output_dim=1, optimizer='Adam', loss='rmse'):
+def lstm_nn(input_dim, feature_size, output_dim=1, optimizer="Adam", loss="rmse"):
     model = Sequential()
     model.add(
         LSTM(
@@ -21,11 +20,11 @@ def lstm_nn(input_dim, feature_size, output_dim=1, optimizer='Adam', loss='rmse'
             input_shape=(input_dim, feature_size),
             recurrent_dropout=0,
             activation="tanh",
-            recurrent_activation = 'sigmoid',
-            unroll = False,
+            recurrent_activation="sigmoid",
+            unroll=False,
             use_bias=True,
             kernel_regularizer="l2",
-            name='LSTM1'
+            name="LSTM1",
         )
     )
     model.add(
@@ -34,12 +33,11 @@ def lstm_nn(input_dim, feature_size, output_dim=1, optimizer='Adam', loss='rmse'
             return_sequences=True,
             recurrent_dropout=0,
             activation="tanh",
-            recurrent_activation = 'sigmoid',
-            unroll = False,
+            recurrent_activation="sigmoid",
+            unroll=False,
             use_bias=True,
             kernel_regularizer="l2",
-            name='LSTM2'
-
+            name="LSTM2",
         )
     )
     model.add(
@@ -48,12 +46,11 @@ def lstm_nn(input_dim, feature_size, output_dim=1, optimizer='Adam', loss='rmse'
             return_sequences=False,
             recurrent_dropout=0,
             activation="tanh",
-            recurrent_activation = 'sigmoid',
-            unroll = False,
+            recurrent_activation="sigmoid",
+            unroll=False,
             use_bias=True,
             kernel_regularizer="l2",
-            name='LSTM3'
-            
+            name="LSTM3",
         )
     )
     model.add(Dense(units=output_dim))

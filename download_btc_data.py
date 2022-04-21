@@ -5,7 +5,7 @@ import math
 from pathlib import Path
 import os
 
-SAVE_DATA_PATH = Path(os.path.abspath('')) / "data"
+SAVE_DATA_PATH = Path(os.path.abspath("")) / "data"
 
 
 class DataGenerator:
