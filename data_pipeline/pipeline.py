@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
-from utils.quantiles import q_at
+# from utils.quantiles import q_at
 from datetime import datetime
 
 
@@ -74,6 +74,7 @@ class DataPipeline:
     ):
         X_scaler = MinMaxScaler()
         y_scaler = MinMaxScaler()
+        print(X_cols)
         X_df = pd.DataFrame(X_scaler.fit_transform(X.loc[:, X_cols]), columns=X_cols)
         y_series = y_scaler.fit_transform(X.loc[:, y_col].values.reshape(-1, 1))
         X_df[y_col] = y_series
@@ -165,17 +166,17 @@ class DataPipeline:
     def get_moving_averages(self, X, peroid_list=[5, 10, 20, 50, 100]):
         df = X.copy()
         for peroid in peroid_list:
-            df[f"sma_{peroid}"] = df["Close"].rolling(window=peroid).mean()
-            df[f"ema_{peroid}"] = df["Close"].ewm(span=peroid).mean()
+            df[f"sma_{peroid}"] = df["close"].rolling(window=peroid).mean()
+            df[f"ema_{peroid}"] = df["close"].ewm(span=peroid).mean()
 
             weights = np.arange(1, peroid + 1)
             df[f"wma_{peroid}"] = (
-                df["Close"]
+                df["close"]
                 .rolling(window=peroid)
                 .apply(lambda prices: np.dot(prices, weights) / weights.sum(), raw=True)
             )
 
-            bollinger_up, bollinger_down = self.get_bollinger_bands(df["Close"], peroid)
+            bollinger_up, bollinger_down = self.get_bollinger_bands(df["close"], peroid)
             df[f"bb_{peroid}_up"] = bollinger_up
             df[f"bb_{peroid}_down"] = bollinger_down
         return df
@@ -199,5 +200,5 @@ class DataPipeline:
     def perform_technical_analysis(self, X, peroid_list=[5, 10, 20, 50, 100]):
         df = X.copy()
         df = self.get_moving_averages(X, peroid_list)
-        df["macd"], df["signal_line"] = self.get_macd(df["Close"])
+        df["macd"], df["signal_line"] = self.get_macd(df["close"])
         return df
