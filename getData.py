@@ -29,7 +29,7 @@ def get_data():
                 "excess_column",
                 ]
 
-        df = pd.DataFrame(client.get_historical_klines("BNBBTC", Client.KLINE_INTERVAL_1MINUTE, "2 hours ago UTC"), columns = column_names)
+        df = pd.DataFrame(client.get_historical_klines("BNBBTC", Client.KLINE_INTERVAL_1MINUTE, "3 hours ago UTC"), columns = column_names)
         print(df)
         
         return df
