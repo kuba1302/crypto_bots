@@ -18,7 +18,7 @@ class ProductionPipeline:
     def scale_data(self, X):
         X_cols = [col for col in X.columns if col not in ["close", "date"]]
         return pd.DataFrame(
-            self.X_scaler.transform(X.loc[:, X_cols]), columns=X_cols
+            self.X_scaler.fit_transform(X.loc[:, X_cols]), columns=X_cols
         )
 
     @staticmethod
@@ -63,8 +63,10 @@ class ProductionPipeline:
         return df
 
     def transform(self, X):
-        stock_data = self.perform_technical_analysis(X)
+        # stock_data = self.perform_technical_analysis(X)
+        stock_data = X.copy()
         stock_data = stock_data.drop(columns="excess_column")
         stock_data = stock_data.tail(60)
+        stock_data["Unnamed: 0"] = stock_data.index
         X_scaled = self.scale_data(stock_data)
         return X_scaled
