@@ -63,10 +63,12 @@ class ProductionPipeline:
         return df
 
     def transform(self, X):
-        # stock_data = self.perform_technical_analysis(X)
-        stock_data = X.copy()
-        stock_data = stock_data.drop(columns="excess_column")
+        stock_data = self.perform_technical_analysis(X)
+        stock_data = stock_data.drop(
+            columns="excess_column"
+            if not "Unnamed: 0" in stock_data.columns
+            else ["Unnamed: 0", "excess_column"]
+        )
         stock_data = stock_data.tail(60)
-        stock_data["Unnamed: 0"] = stock_data.index
         X_scaled = self.scale_data(stock_data)
         return X_scaled

@@ -1,20 +1,9 @@
 from binance.client import Client
 import pandas as pd
-import os
-from dotenv import load_dotenv
-
+from bot.load_env import API_KEY, SECRET_KEY
 
 def get_data():
-    """Gets data with binance.client"""
-
-    # Loads values from .env file
-    load_dotenv()
-    api_key = os.environ["API_KEY"]
-    api_secret = os.environ["SECRET_KEY"]
-
-    client = Client(api_key=api_key, api_secret=api_secret, testnet=True)
-
-    client.get_account_api_trading_status()
+    client = Client(api_key=API_KEY, api_secret=SECRET_KEY, testnet=True)
     column_names = [
         "open_tstmp",
         "open",
@@ -36,5 +25,5 @@ def get_data():
         ),
         columns=column_names,
     )
-    print(df)
+
     return df
