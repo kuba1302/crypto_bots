@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
+
 # from utils.quantiles import q_at
 from datetime import datetime
 
@@ -20,7 +21,6 @@ class DataPipeline:
         step_train: int,
         step_predict: int,
         if_ta=True,
-        if_btc: bool = True,
     ) -> None:
         self.ticker = ticker
         self.step_train = step_train
@@ -31,9 +31,6 @@ class DataPipeline:
         self.if_ta = if_ta
         self.min_time = None
         self.max_time = None
-        self.if_btc = if_btc
-        if not self.if_btc:
-            self.sentiment_df = self.load_sentiment_data()
 
     def load_sentiment_data(self):
         sentiment_df = pd.read_csv(self.sentiment_path / f"{self.ticker}.csv").drop(
@@ -74,7 +71,6 @@ class DataPipeline:
     ):
         X_scaler = MinMaxScaler()
         y_scaler = MinMaxScaler()
-        print(X_cols)
         X_df = pd.DataFrame(X_scaler.fit_transform(X.loc[:, X_cols]), columns=X_cols)
         y_series = y_scaler.fit_transform(X.loc[:, y_col].values.reshape(-1, 1))
         X_df[y_col] = y_series
@@ -116,21 +112,12 @@ class DataPipeline:
         stock_data = self._load_stock_data()
         if self.if_ta:
             stock_data = self.perform_technical_analysis(stock_data)
-        if not self.if_btc:
-            final_data = (
-                stock_data.loc[
-                    (stock_data["Date"] >= self.min_time)
-                    & (stock_data["Date"] < self.max_time)
-                ]
-                .drop(
-                    columns=["Dividends", "Stock Splits", "Unnamed: 0"]
-                    if "Unnamed: 0" in stock_data
-                    else ["Dividends", "Stock Splits"]
-                )
-                .dropna(axis="columns")
-            )
-        else:
-            final_data = stock_data.drop(columns="excess_column")
+
+        final_data = stock_data.drop(
+            columns="excess_column"
+            if not "Unnamed: 0" in stock_data.columns
+            else ["Unnamed: 0", "excess_column"]
+        ).dropna(axis="rows")
         if sentiment is not None:
             final_data = (
                 final_data.merge(self.sentiment_df, how="left", on="Date")
@@ -139,9 +126,11 @@ class DataPipeline:
                 .interpolate(method="time")
             )
         x_cols = [col for col in final_data.columns if col not in ["close", "date"]]
+        print(final_data)
         scaled_data = self.prepare_data(
             X=final_data, X_cols=x_cols, save_scaler_path=self.save_path
         )
+        print(f"Columns: {x_cols}")
         X_list, Y_preds_real_list, Y_whole_real_list = self.split_data(
             scaled_data, self.step_train, self.step_predict
         )
@@ -156,7 +145,7 @@ class DataPipeline:
         temp = dict(zip(names, df_lists))
         save_data = {}
         for name, df_list in temp.items():
-            train, test = self.train_test_split(df_list, 0.75)
+            train, test = self.train_test_split(df_list, 1)
             save_data[f"{name}_train"] = train
             save_data[f"{name}_test"] = test
 

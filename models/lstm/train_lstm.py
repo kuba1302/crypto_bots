@@ -4,15 +4,15 @@ import pickle
 import os
 from pathlib import Path
 from models.lstm.lstm import lstm_nn
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
 if __name__ == "__main__":
-    MODEL_VERSION = "0.1"
+    MODEL_VERSION = "0.3"
     EPOCHS = 10
-    BATCH_SIZE = 32
     TICKER = "BTC"
-    load_path = Path(os.path.abspath("")) / "data" / "preprocessed"
-    save_path = Path(os.path.abspath("")) / "models" / "lstm" / "versions"
+
+    load_path = Path(__file__).parents[2] / "data" / "preprocessed"
+    save_path = Path(__file__).parents[2] / "models" / "lstm" / "versions"
     os.makedirs(save_path, exist_ok=True)
     with open(load_path / f"data_{TICKER}.pickle", "rb") as test:
         data = pickle.load(test)
@@ -27,12 +27,17 @@ if __name__ == "__main__":
         optimizer="Adam",
         loss="mse",
     )
-    early_stopping = EarlyStopping(monitor="loss", mode="min", verbose=1, patience=50)
+    mc = ModelCheckpoint(
+        save_path / f"lstm_{MODEL_VERSION}",
+        monitor="loss",
+        mode="min",
+        save_best_only=True,
+    )
+    early_stopping = EarlyStopping(monitor="loss", mode="min", verbose=1, patience=20)
     lstm.fit(
         data["X_list_train"],
         data["Y_preds_real_list_train"],
         epochs=EPOCHS,
-        batch_size=BATCH_SIZE,
         callbacks=[early_stopping],
     )
     lstm.save(save_path / f"lstm_{MODEL_VERSION}")

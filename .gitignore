@@ -129,3 +129,7 @@ dmypy.json
 .pyre/
 
 *.pickle
+
+.vscode
+
+*.csv

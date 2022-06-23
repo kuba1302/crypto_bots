@@ -5,7 +5,7 @@ import math
 from pathlib import Path
 import os
 
-SAVE_DATA_PATH = Path(os.path.abspath("")) / "data"
+SAVE_DATA_PATH = Path(__file__).parents[0] / "data"
 
 
 class DataGenerator:
@@ -97,9 +97,9 @@ class DataGenerator:
 
     def data_to_csv(self, save_path):
         """Save data to csv file"""
-        self.data.to_csv(f"{save_path}data_{self.date_start}_{self.interval}.csv")
+        self.data.to_csv(f"{save_path}/BTC.csv")
 
 
 if __name__ == "__main__":
-    dg = DataGenerator("1m", "01/10/21", "31/10/21")
+    dg = DataGenerator("1m", "17/06/22", "24/06/22")
     dg.data_to_csv(SAVE_DATA_PATH)
