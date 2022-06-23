@@ -145,7 +145,7 @@ class DataPipeline:
         temp = dict(zip(names, df_lists))
         save_data = {}
         for name, df_list in temp.items():
-            train, test = self.train_test_split(df_list, 0.75)
+            train, test = self.train_test_split(df_list, 1)
             save_data[f"{name}_train"] = train
             save_data[f"{name}_test"] = test
 

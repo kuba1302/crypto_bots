@@ -101,5 +101,5 @@ class DataGenerator:
 
 
 if __name__ == "__main__":
-    dg = DataGenerator("1m", "12/05/22", "12/06/22")
+    dg = DataGenerator("1m", "17/06/22", "24/06/22")
     dg.data_to_csv(SAVE_DATA_PATH)

@@ -7,9 +7,8 @@ from models.lstm.lstm import lstm_nn
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
 if __name__ == "__main__":
-    MODEL_VERSION = "0.2"
+    MODEL_VERSION = "0.3"
     EPOCHS = 10
-    BATCH_SIZE = 32
     TICKER = "BTC"
 
     load_path = Path(__file__).parents[2] / "data" / "preprocessed"
@@ -34,12 +33,11 @@ if __name__ == "__main__":
         mode="min",
         save_best_only=True,
     )
-    early_stopping = EarlyStopping(monitor="loss", mode="min", verbose=1, patience=2)
+    early_stopping = EarlyStopping(monitor="loss", mode="min", verbose=1, patience=20)
     lstm.fit(
         data["X_list_train"],
         data["Y_preds_real_list_train"],
         epochs=EPOCHS,
-        batch_size=BATCH_SIZE,
-        callbacks=[early_stopping, mc],
+        callbacks=[early_stopping],
     )
     lstm.save(save_path / f"lstm_{MODEL_VERSION}")

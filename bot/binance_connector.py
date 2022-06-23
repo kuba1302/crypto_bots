@@ -3,6 +3,7 @@ from binance.spot import Spot as Client
 from bot.load_env import API_KEY, SECRET_KEY
 import logging
 from utils.log import prepare_logger
+import numpy as np
 
 logger = prepare_logger(logging.INFO)
 
@@ -40,16 +41,17 @@ class BinanceConnector:
             if currency_dict["asset"] in currencies
         }
 
-    def get_balance(self) -> None:
+    def get_balance(self, verbose=True) -> None:
         balances = self.client.account()["balances"]
         exchange_rate = self.get_exchange_rate()
         self.balance = BinanceBalance.get_total_balance(
             **self.find_currencies(currencies=self.tickers, balances=balances),
             exchange_rate=exchange_rate,
         )
-        logger.info(
-            f"Total balance: {self.get_string_from_dict(self.balance.__dict__)}"
-        )
+        if verbose:
+            logger.info(
+                f"Total balance: {self.get_string_from_dict(self.balance.__dict__)}"
+            )
 
     def get_exchange_rate(self, ticker="BTCUSDT") -> float:
         return float(self.client.ticker_price(ticker)["price"])
@@ -66,7 +68,7 @@ class BinanceConnector:
         ), f"Wrong order type - {order_type}! It must be in {possible_order_types}"
         params = {
             "symbol": "BTCUSDT",
-            "side": "SELL",
+            "side": order_type,
             "type": "MARKET",
             "quantity": quantity,
         }
@@ -80,15 +82,20 @@ class BinanceConnector:
     def sell(self) -> None:
         self.get_balance()
         quantity = self.round_quantity(self.balance.btc)
-
         if quantity >= 0.0005:
             self.place_order(order_type="SELL", quantity=quantity)
+            return True, quantity
+        else:
+            logger.info(f"Not enough quantity to sell - {quantity}!")
+            return False, None  
 
     def buy(self) -> None:
         self.get_balance()
         exchange_rate = self.get_exchange_rate()
-        quantity = self.round_quantity(self.balance.usdt * 0.95 / exchange_rate)
-        logger.info(f"Buy total amount: {quantity * exchange_rate}")
+        quantity = self.round_quantity(self.balance.usdt * 0.90 / exchange_rate)
         if quantity >= 0.0005:
             self.place_order(order_type="BUY", quantity=quantity)
-    
+            return True, quantity
+        else:
+            logger.info(f"Not enough quantity to buy! - {quantity}")
+            return False, None 
